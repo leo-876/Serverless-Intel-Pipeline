@@ -6,6 +6,5 @@ This project implements a serverless threat-intelligence ingestion backend on AW
 ## Deployment Steps
 1. From project root:
    ```bash
-   cd backend-only-project
    sam build
    sam deploy --guided
