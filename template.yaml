@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless Threat Intel Ingestion
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+
+  IngestionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: threat_intel_ingestion
+      Handler: handler.handler
+      CodeUri: lambda/
+      Environment:
+        Variables:
+          DDB_TABLE: !Ref IndicatorsTable
+          SNS_TOPIC_ARN: !Ref AlertsTopic
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource: !GetAtt IndicatorsTable.Arn
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: !Ref AlertsTopic
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: arn:aws:s3:::cti-pipeline-bucket-test-123/*
+            - Effect: Allow
+              Action:
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: "*"
+
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: ThreatIntelAlerts
+
+  IndicatorsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: threat_indicators
+      AttributeDefinitions:
+        - AttributeName: indicator_value
+          AttributeType: S
+        - AttributeName: indicator_type
+          AttributeType: S
+      KeySchema:
+        - AttributeName: indicator_value
+          KeyType: HASH
+        - AttributeName: indicator_type
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  DynamoTable:
+    Description: DynamoDB table
+    Value: !Ref IndicatorsTable
+  SNSTopic:
+    Description: SNS topic ARN
+    Value: !Ref AlertsTopic
+  IngestionFunctionArn:
+    Description: Ingestion Lambda ARN
+    Value: !GetAtt IngestionFunction.Arn

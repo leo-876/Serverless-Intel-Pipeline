@@ -1,0 +1,4 @@
+type,value,meta
+ip,192.0.2.5,source=lab
+domain,evil.example.org,source=feeds
+hash,e3b0c44298fc1c...,source=malware

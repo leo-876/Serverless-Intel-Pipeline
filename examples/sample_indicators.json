@@ -1,0 +1,7 @@
+{
+  "indicators": [
+    {"type": "ip", "value": "192.0.2.1"},
+    {"type": "domain", "value": "mal.example.com"},
+    {"type": "sha256", "value": "e3b0c44298fc1c149afbf4c8996fb924"}
+  ]
+}
